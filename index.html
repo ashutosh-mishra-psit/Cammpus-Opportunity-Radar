@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A personal dashboard for tracking student opportunities and deadlines.">
+  <title>Campus Opportunity Radar</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #20243a;
+    }
+
+    header {
+      background: #18264b;
+      color: white;
+      padding: 28px 18px;
+      text-align: center;
+    }
+
+    header p { color: #dce5ff; }
+
+    main {
+      max-width: 850px;
+      margin: 24px auto;
+      padding: 0 15px;
+    }
+
+    .panel {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px #17264b0d;
+    }
+
+    h2 { margin-top: 0; }
+
+    form, .filters {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #ccd2e0;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    button {
+      background: #294fc4;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover { opacity: 0.9; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      color: #294fc4;
+    }
+
+    .stat span { font-size: 12px; }
+
+    .opportunity {
+      background: white;
+      border-left: 4px solid #294fc4;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .opportunity h3 { margin: 0 0 8px; }
+
+    .meta {
+      color: #596176;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .actions button, .actions a {
+      width: auto;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .actions a {
+      background: #e8edff;
+      color: #203d9a;
+    }
+
+    .actions .delete { background: #b83243; }
+
+    .empty {
+      text-align: center;
+      color: #596176;
+      padding: 24px 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #596176;
+      font-size: 13px;
+    }
+
+    @media (min-width: 600px) {
+      form, .filters {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .wide { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Campus Opportunity Radar</h1>
+    <p>Find your next opportunity. Keep every deadline in sight.</p>
+  </header>
+
+  <main>
+    <section class="stats" aria-label="Opportunity summary">
+      <div class="stat">
+        <strong id="total">0</strong>
+        <span>Total opportunities</span>
+      </div>
+      <div class="stat">
+        <strong id="upcoming">0</strong>
+        <span>Upcoming deadlines</span>
+      </div>
+      <div class="stat">
+        <strong id="applied">0</strong>
+        <span>Applications sent</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Add an opportunity</h2>
+      <form id="opportunityForm">
+        <label>
+          Opportunity name *
+          <input id="name" required maxlength="100"
+            placeholder="e.g. Summer Internship">
+        </label>
+
+        <label>
+          Organization *
+          <input id="organization" required maxlength="100"
+            placeholder="e.g. Example Company">
+        </label>
+
+        <label>
+          Category
+          <select id="category">
+            <option>Internship</option>
+            <option>Hackathon</option>
+            <option>Scholarship</option>
+            <option>Competition</option>
+            <option>Course</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+        <label>
+          Deadline *
+          <input id="deadline" type="date" required>
+        </label>
+
+        <label>
+          Application status
+          <select id="status">
+            <option>Interested</option>
+            <option>Preparing</option>
+            <option>Applied</option>
+            <option>Accepted</option>
+            <option>Rejected</option>
+          </select>
+        </label>
+
+        <label>
+          Official application URL (optional)
+          <input id="url" type="url"
+            placeholder="https://example.com">
+        </label>
+
+        <button class="wide" type="submit">Add opportunity</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Your opportunities</h2>
+      <div class="filters">
+        <label>
+          Search
+          <input id="search" placeholder="Search name or organization">
+        </label>
+        <label>
+          Filter by category
+          <select id="categoryFilter">
+            <option value="">All categories</option>
+            <option>Internship</option>
+            <option>Hackathon</option>
+            <option>Scholarship</option>
+            <option>Competition</option>
+            <option>Course</option>
+            <option>Other</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section id="opportunityList" aria-live="polite"></section>
+  </main>
+
+  <footer>
+    Campus Opportunity Radar · A student-built project
+  </footer>
+
+  <script>
+    const STORAGE_KEY = "campusRadarOpportunities";
+    const form = document.getElementById("opportunityForm");
+    const list = document.getElementById("opportunityList");
+    const search = document.getElementById("search");
+    const categoryFilter = document.getElementById("categoryFilter");
+
+    let opportunities = [];
+
+    try {
+      opportunities = JSON.parse(
+        localStorage.getItem(STORAGE_KEY) || "[]"
+      );
+
+      if (!Array.isArray(opportunities)) opportunities = [];
+    } catch {
+      opportunities = [];
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(opportunities)
+        );
+      } catch {
+        alert("Could not save data on this device.");
+      }
+    }
+
+    function makeElement(tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+
+      if (className) element.className = className;
+      return element;
+    }
+
+    function render() {
+      list.replaceChildren();
+
+      const query = search.value.trim().toLowerCase();
+      const category = categoryFilter.value;
+      const today = new Date().toISOString().slice(0, 10);
+
+      document.getElementById("total").textContent =
+        opportunities.length;
+
+      document.getElementById("upcoming").textContent =
+        opportunities.filter(item =>
+          item.deadline >= today &&
+          item.status !== "Accepted" &&
+          item.status !== "Rejected"
+        ).length;
+
+      document.getElementById("applied").textContent =
+        opportunities.filter(item =>
+          item.status === "Applied" ||
+          item.status === "Accepted"
+        ).length;
+
+      const filtered = opportunities
+        .filter(item =>
+          (item.name + " " + item.organization)
+            .toLowerCase().includes(query) &&
+          (!category || item.category === category)
+        )
+        .sort((a, b) => a.deadline.localeCompare(b.deadline));
+
+      if (!filtered.length) {
+        list.append(makeElement(
+          "p",
+          opportunities.length
+            ? "No matching opportunities. Try another search."
+            : "No opportunities yet. Add your first one above!",
+          "empty"
+        ));
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = makeElement("article", "", "opportunity");
+        card.append(makeElement("h3", item.name));
+        card.append(makeElement(
+          "div", item.organization + " · " + item.category, "meta"
+        ));
+        card.append(makeElement(
+          "div", "Deadline: " + item.deadline, "meta"
+        ));
+        card.append(makeElement(
+          "div", "Status: " + item.status, "meta"
+        ));
+
+        const actions = makeElement("div", "", "actions");
+
+        if (item.url) {
+          const link = document.createElement("a");
+          link.textContent = "Application page";
+          link.href = item.url;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          actions.append(link);
+        }
+
+        const statusButton = makeElement("button", "Change status");
+        statusButton.type = "button";
+        statusButton.addEventListener("click", () => {
+          const statuses = [
+            "Interested", "Preparing", "Applied",
+            "Accepted", "Rejected"
+          ];
+          const current = statuses.indexOf(item.status);
+          item.status = statuses[(current + 1) % statuses.length];
+          save();
+          render();
+        });
+        actions.append(statusButton);
+
+        const deleteButton = makeElement(
+          "button", "Delete", "delete"
+        );
+        deleteButton.type = "button";
+        deleteButton.addEventListener("click", () => {
+          if (confirm("Delete this opportunity?")) {
+            opportunities = opportunities.filter(
+              entry => entry.id !== item.id
+            );
+            save();
+            render();
+          }
+        });
+        actions.append(deleteButton);
+
+        card.append(actions);
+        list.append(card);
+      });
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const organization = document.getElementById(
+        "organization"
+      ).value.trim();
+      const deadline = document.getElementById("deadline").value;
+      const url = document.getElementById("url").value.trim();
+
+      if (!name || !organization || !deadline) {
+        alert("Please complete all required fields.");
+        return;
+      }
+
+      if (url && !/^https?:\/\//i.test(url)) {
+        alert("Use a valid HTTP or HTTPS URL.");
+        return;
+      }
+
+      opportunities.push({
+        id: Date.now().toString() + Math.random().toString(16).slice(2),
+        name,
+        organization,
+        category: document.getElementById("category").value,
+        deadline,
+        status: document.getElementById("status").value,
+        url
+      });
+
+      save();
+      form.reset();
+      render();
+    });
+
+    search.addEventListener("input", render);
+    categoryFilter.addEventListener("change", render);
+
+    render();
+  </script>
+</body>
+</html>
